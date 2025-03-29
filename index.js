@@ -1,45 +1,29 @@
 var express = require('express');
+var mongoose = require('mongoose');
+const uri = "mongodb+srv://Avallone:Avallone13@elv-quiz.aog4i.mongodb.net/?retryWrites=true&w=majority&appName=minha-api";
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const userRoutes = require('./routes/userRoute');
+const productRoutes = require('./routes/productRoute');
 
 var app = express();
 
 app.use(express.json());
-
+app.use('/users', userRoutes);
+app.use('/products', productRoutes);
 var PORT = 3030;
 
-app.get("/hello",(req, res) => {
-    console.log(req.query);
-    const { estacao } = req.query;
-
-
-    if(estacao === 'verão'){
-        return res.json('Está quente')
-    } else if(estacao === 'Inverno'){
-        return res.json('Está frio')
-    } else if(estacao === 'Outono'){
-        return res.json('As folhas estão caindo')
-    } else{
-        return res.json('estacao indefinida')
-    }
+app.listen(PORT,() => {
+    console.log('Servidor rodando na porta 3030')
 })
 
-app.post("/hello",(req, res) => {
-    const { nome, idade, email } = req.body;
-    const userEmail = "klonoaxel51@gmail.com";
-    if(!nome || !idade || !email){
-        return res.json('campos vazio detectados')
-    }
+mongoose.connect(uri,{
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 
-    if( idade < 18){
-        return res.json('usuário menor de idade')
-    }
-
-    if(email === userEmail){
-        return res.json('email já cadastrado no sistema')   
-    }
-
-    return res.json('usuário criado com sucesso')
-});
-
-app.listen(PORT,() => {
-    console.log('Servidor rodando na porta 3000')
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Erro ao conectar'));
+db.once('open', function(){
+    console.log('Conectado ao banco com sucesso');
 })
