@@ -29,7 +29,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const user = await User.find();
         console.log("user", user)
@@ -83,7 +83,7 @@ router.post("/login",async (req, res) => {
         if(!userFinded){
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
-        const token = jwt.sign({email:userFinded.email, name:userFinded.name, age:userFinded.age},'ava@2020',{expiresIn: '1h'})
+        const token = jwt.sign({id:userFinded.id, email:userFinded.email, name:userFinded.name, age:userFinded.age},'ava@2020',{expiresIn: '1h'})
         return res.status(200).json(token);
     } catch (error) {
         res.status(501).send({message: `${error.message} - erro ao autenticar usuário`})
@@ -98,4 +98,28 @@ router.get("/me",verifyToken, async (req, res) => {
     }
     
 });
+router.get("/welcome",verifyToken, async (req, res) => {
+    try {
+        const me = await User.findOne({email: req.email});
+        if(me.name && me.age && me.email){
+            return res.status(200).json(`Ola ${me.name} você possui o email ${me.email} e tem ${me.age} de idade`);
+        }
+    } catch (error) {
+        res.status(500).send({message: `${error.message} - erro ao procurar usuário`})
+    }
+    
+});
+router.get("/acesso",verifyToken, async (req, res) => {
+    try {
+        const me = await User.findOne({email: req.email});
+        if(me.name !== "Beleza"){
+            return res.status(200).json(`Acesso negado`);
+        }
+        return res.status(200).json(`Acesso permitido`);
+    } catch (error) {
+        res.status(500).send({message: `${error.message} - erro ao procurar usuário`})
+    }
+    
+});
+
 module.exports = router;
