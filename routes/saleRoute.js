@@ -19,6 +19,42 @@ router.post("/", verifyToken, async (req, res) => {
    }
 });
 
+router.post("/reversal", async (req, res) => {
+    try {
+        const { saleId } = req.body;
+        const { productIdToReturn } = req.body;
+        const originalSale = await Sale.findById(saleId);
+        if (!originalSale) return res.status(404).json({ message: 'Venda não encontrada.' });
+        if (!Array.isArray(productIdToReturn)) {
+            productIdToReturn = [productIdToReturn];
+        }
+        const remainingProducts = originalSale.products.filter(p =>
+            !productIdToReturn.includes(p.product._id.toString())
+        );
+        
+        if (remainingProducts.length === 0) {
+            originalSale.status = 'returned';
+            await originalSale.save();
+            return res.json({ message: 'Todos os produtos foram devolvidos. Venda marcada como devolvida.' });
+        }
+        originalSale.status = 'partially_returned';
+        await originalSale.save();
+
+        // Criar nova venda com os produtos restantes
+        const newSale = new Sale({
+            user: originalSale.user,
+            products: remainingProducts,
+            originalSale: originalSale._id
+        });
+        await newSale.save();
+
+        res.status(201).json({ message: 'Item devolvido e nova venda criada.', newSale });
+     } catch (error) {
+       // Retorna um erro caso algo falhe
+       return res.status(500).send({ message: `Erro ao estornar venda` });
+   }
+});
+
 router.get("/", verifyToken, async (req, res) => {
     try {
         const sales = await Sale.find()

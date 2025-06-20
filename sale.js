@@ -7,7 +7,9 @@ const SaleSchema = new Schema({
         product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
         quantity: { type: Number, default: 1 }
     }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  status: { type: String, enum: ['completed', 'partially_returned', 'returned'], default: 'completed' },
+  originalSale: { type: Schema.Types.ObjectId, ref: 'Sale' } // se for cópia sem devolução
 });
 
 const Sale = mongoose.model('Sale', SaleSchema);
