@@ -12,7 +12,7 @@ function verifyToken(req, res, next) {
         req.age = decoded.age;
         next();
     } catch (error) {
-        res.status(401).json({ error: 'Invalid token' });
+        res.status(401).json({ error: 'Invalid token'+ error });
     }
 }
 
